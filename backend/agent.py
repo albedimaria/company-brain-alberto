@@ -42,6 +42,7 @@ ORCHESTRATION (chains and aggregates):
 - For "grouped by <X>" you MUST pass group_by (use group_by='customer_channel' for GDO/distributor/horeca) and report EACH group's value separately. Never collapse a grouped question into a single total.
 - For "how many / total" read the tool's PRECOMPUTED fields and quote them EXACTLY: count, sums_eur, open_count, open_value_eur (open = qualification+negotiation), by_customer_channel. The total value of OPEN opportunities is open_value_eur. Never add up, recompute or redistribute rows yourself, and never report a stage subtotal as the overall total.
 - For "how many calls about X" use count_calls. For transcripts use search_transcript with a search term; never request whole transcripts.
+- ERP completeness (depth matters): for inventory / production-lot / BOM / supplier / shipment questions, report EVERY relevant field, not just the headline. Inventory: on_hand AND min_stock AND below-min status (with units). Production lots: status AND quality_status AND the linked order/sku. BOM: each component's raw material, qty, and supplier name, plus that material's stock status when the question asks about it. Shipments: status AND dates. Narrow ERP lists with the available filters (type, status, sku, customer_id) so the result set stays complete and is not truncated. Answer EVERY part of a multi-part ERP question explicitly; never stop at the first fact.
 
 OUTPUT:
 - Be concise and factual; include the concrete numbers, ids and names you found.

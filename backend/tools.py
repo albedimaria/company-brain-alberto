@@ -671,7 +671,7 @@ TOOLS: list[dict] = [
 ]
 
 
-def tool_json(payload: dict, max_chars: int = 7000) -> str:
+def tool_json(payload: dict, max_chars: int = 12000) -> str:
     """Serialize a tool payload for the model, capped to keep latency/tokens sane."""
     text = json.dumps(payload, ensure_ascii=False, default=str)
     if len(text) > max_chars:
