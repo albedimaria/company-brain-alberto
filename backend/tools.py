@@ -20,6 +20,7 @@ from rag import get_kb_document, kb_search
 MAX_LIMIT = 200  # API hard cap
 _EUR_FIELDS = ("value_eur", "total_eur", "amount_eur")
 _OPEN_STAGES = ("qualification", "negotiation")
+_VALID_STAGES = {"qualification", "negotiation", "won", "lost"}
 
 
 # --------------------------------------------------------------------------- #
@@ -112,6 +113,12 @@ def get_customer(customer_id: str) -> dict:
 def list_opportunities(
     customer_id=None, stage=None, owner=None, group_by=None, all_pages=True
 ) -> dict:
+    # The model sometimes passes a conceptual stage like "open"/"closed", which
+    # is not a real stage value and would filter the API down to zero rows.
+    # Drop anything outside the real enum: open_count/open_value_eur below are
+    # computed in Python over the full set, so ignoring it yields correct totals.
+    if stage not in _VALID_STAGES:
+        stage = None
     items = _list(
         "/crm/opportunities",
         {"customer_id": customer_id, "stage": stage, "owner": owner},
