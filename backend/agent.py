@@ -47,6 +47,26 @@ OUTPUT:
 """
 
 _VERTICALE = {"crm": "crm", "calls": "calls", "erp": "erp"}
+_LANG = {
+    "it": "Italian (italiano)",
+    "en": "English",
+    "es": "Spanish (español)",
+}
+
+
+def _answer_lang(lang: str | None) -> str:
+    return lang if lang in _LANG else "en"
+
+
+def _system_prompt(lang: str | None) -> str:
+    code = _answer_lang(lang)
+    label = _LANG[code]
+    return (
+        SYSTEM_PROMPT
+        + f"\n\nLANGUAGE: Write every final answer in {label}. "
+        f"Keep ids, SKUs, lot codes and proper nouns as returned by tools; "
+        f"all explanatory sentences must be in {label}."
+    )
 
 
 def _infer_verticale(sources: list[str]) -> str:
@@ -96,12 +116,16 @@ def _force_answer(
     sources: list[str],
     artifact_url: str | None,
     reason: str,
+    lang: str | None = None,
 ) -> dict:
+    code = _answer_lang(lang)
+    label = _LANG[code]
     messages.append(
         {
             "role": "user",
             "content": f"{reason} Stop calling tools. Answer now using only what the tools returned. "
-            "If something is missing, say it is not available. Plain text only, no markdown bold.",
+            f"If something is missing, say it is not available. Plain text only, no markdown bold. "
+            f"Write the answer in {label}.",
         }
     )
     final = _chat(messages, tool_choice="none")
@@ -112,10 +136,10 @@ def _force_answer(
     return _result(answer, sources, artifact_url)
 
 
-def run(question: str) -> dict:
+def run(question: str, lang: str | None = None) -> dict:
     """Run the agent loop and return the /ask payload."""
     messages: list[dict] = [
-        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "system", "content": _system_prompt(lang)},
         {"role": "user", "content": question},
     ]
     sources: list[str] = []
@@ -130,6 +154,7 @@ def run(question: str) -> dict:
                     sources,
                     artifact_url,
                     "Time limit reached.",
+                    lang,
                 )
             last_step = step == MAX_STEPS - 1
             resp = _chat(messages, tool_choice="auto")
@@ -167,6 +192,7 @@ def run(question: str) -> dict:
                         sources,
                         artifact_url,
                         "Time limit reached.",
+                        lang,
                     )
                 name = call.function.name
                 try:
@@ -201,6 +227,7 @@ def run(question: str) -> dict:
                     sources,
                     artifact_url,
                     "Tool budget exhausted.",
+                    lang,
                 )
     except Exception as exc:  # never 5xx: honest abstention keeps the contract
         return _result(

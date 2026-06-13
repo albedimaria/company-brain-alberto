@@ -44,6 +44,7 @@ def ui() -> FileResponse:
 
 class AskRequest(BaseModel):
     question: str = Field(..., min_length=1)
+    lang: str | None = None  # it | en | es — UI language for the answer prose
 
 
 class AskResponse(BaseModel):
@@ -60,7 +61,7 @@ def health() -> dict[str, str]:
 
 @app.post("/ask", response_model=AskResponse)
 def ask(request: AskRequest) -> AskResponse:
-    result = agent.run(request.question)
+    result = agent.run(request.question, lang=request.lang)
     return AskResponse(**result)
 
 
