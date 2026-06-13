@@ -9,6 +9,7 @@ loop. Source ids are accumulated for provenance; verticale is inferred from them
 from __future__ import annotations
 
 import json
+import re
 import time
 
 import config
@@ -17,6 +18,13 @@ from tools import TOOLS, run_tool, tool_json
 MAX_STEPS = 6
 LLM_RETRIES = 2
 TIMEOUT_SEC = 25
+
+# Deterministic guard: when the question names exactly one customer id, scope
+# every customer-level CRM/calls tool call to it, regardless of what the model
+# passed. Kills the provider-side non-determinism where the model occasionally
+# omits/garbles customer_id and the list comes back empty (0 opportunities).
+_CUST_RE = re.compile(r"\bCUST-\d{3,}\b")
+_CUST_SCOPED = {"list_opportunities", "list_orders", "list_invoices", "list_calls"}
 
 SYSTEM_PROMPT = """You are the Company Brain of Al Dente S.r.l., a dry-pasta maker.
 You answer questions about the company by calling tools, then composing a precise answer.
@@ -152,6 +160,10 @@ def run(question: str, lang: str | None = None) -> dict:
     sources: list[str] = []
     artifact_url: str | None = None
     start = time.time()
+    # If the question names exactly one customer, force that id on every
+    # customer-scoped tool call below (deterministic; see _CUST_SCOPED).
+    _cust_ids = set(_CUST_RE.findall(question))
+    forced_cust = next(iter(_cust_ids)) if len(_cust_ids) == 1 else None
 
     try:
         for step in range(MAX_STEPS):
@@ -215,6 +227,9 @@ def run(question: str, lang: str | None = None) -> dict:
                     vert = args.get("verticale") or _infer_verticale(sources)
                     url = args.get("artifact_url") or artifact_url
                     return _result(answer, sources, url, verticale=vert)
+
+                if forced_cust and name in _CUST_SCOPED:
+                    args["customer_id"] = forced_cust
 
                 payload, src = run_tool(name, args)
                 sources.extend(src)
