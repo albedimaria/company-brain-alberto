@@ -482,7 +482,7 @@ TOOLS: list[dict] = [
     ),
     _tool(
         "list_opportunities",
-        "List opportunities. Returns count, EUR sums, and open_count/open_value_eur (open = qualification+negotiation). Use group_by='customer_channel' to break totals down by GDO/distributor/horeca.",
+        "List opportunities. Returns count, EUR sums, and open_count/open_value_eur (open = qualification+negotiation). Use group_by='customer_channel' to break totals down by GDO/distributor/horeca. When the question is about a specific customer, you MUST pass customer_id.",
         {
             "customer_id": _STR,
             "stage": {
@@ -495,7 +495,7 @@ TOOLS: list[dict] = [
     ),
     _tool(
         "list_orders",
-        "List orders. Returns count + EUR sums. group_by optional ('customer_channel' or a field).",
+        "List orders. Returns count + EUR sums. group_by optional ('customer_channel' or a field). When the question is about a specific customer, you MUST pass customer_id.",
         {
             "customer_id": _STR,
             "status": {
@@ -509,7 +509,7 @@ TOOLS: list[dict] = [
     ),
     _tool(
         "list_invoices",
-        "List invoices with EUR sums.",
+        "List invoices with EUR sums. When the question is about a specific customer, you MUST pass customer_id.",
         {
             "customer_id": _STR,
             "status": {"type": "string", "enum": ["unpaid", "paid", "overdue"]},
@@ -518,7 +518,7 @@ TOOLS: list[dict] = [
     ),
     _tool(
         "list_calls",
-        "List call logs (metadata: topic, summary, outcome, related_lot_id). topic_contains filters client-side over topic+summary.",
+        "List call logs (metadata: topic, summary, outcome, related_lot_id). topic_contains filters client-side over topic+summary. When the question is about a specific customer, you MUST pass customer_id.",
         {
             "customer_id": _STR,
             "type": {"type": "string", "enum": ["sales", "support"]},
