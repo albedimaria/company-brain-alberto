@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Al Dente · Company Brain</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <script>window.__threeReadyP = new Promise(r => { window.__threeReadyResolve = r; });</script>
+  <script type="module">
+    import * as THREE from '/static/vendor/three.module.min.js';
+    window.THREE = THREE; window.__threeReadyResolve();
+  </script>
+  <script src="/static/vendor/force-graph.min.js"></script>
+  <script src="/static/vendor/3d-force-graph.min.js"></script>
+  <style>
+    /* Refactoring UI tokens: spacing 4/8/12/16/24/32/48, type 12–24, hierarchy via weight+color */
+    :root{
+      --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
+      --text-xs:12px; --text-sm:14px; --text-base:16px; --text-lg:18px; --text-xl:20px; --text-2xl:24px;
+      --leading-tight:1.2; --leading-normal:1.5; --leading-relaxed:1.65;
+      --fw-normal:400; --fw-medium:500; --fw-semibold:600; --fw-bold:700;
+      --bg:#FBF8F2; --surface:#ffffff; --surface2:#FCFAF5; --line:#ECE3D3; --line2:#E3D8C4;
+      --ink:#211D16; --ink-secondary:#4A4538; --muted:#6F6857; --muted2:#8C8472; --muted3:#A89F8C;
+      --gold:#C8841E; --gold-soft:#E0A23C; --gold-bg:#FBEFD8;
+      --blue:#4454FF; --blue-deep:#2C1AE2; --blue-bg:#EEF0FF;
+      --graph-bg:#0b1020;
+      --customer:#6E8BFF; --product:#FFC23F; --material:#5FD0A0; --supplier:#22D3EE;
+      --shadow-sm:0 1px 2px rgba(33,29,22,.05);
+      --shadow-md:0 4px 6px -1px rgba(33,29,22,.07), 0 2px 4px -1px rgba(33,29,22,.04);
+      --shadow-lg:0 10px 24px -4px rgba(33,29,22,.09), 0 4px 8px -2px rgba(33,29,22,.04);
+      --radius-sm:8px; --radius-md:12px; --radius-lg:16px;
+    }
+    *{box-sizing:border-box}
+    html{font-size:16px;-webkit-font-smoothing:antialiased}
+    html,body{height:100%}
+    body{margin:0;color:var(--ink);font:var(--fw-normal) var(--text-base)/var(--leading-relaxed) Figtree,ui-sans-serif,system-ui,sans-serif;
+      background:
+        radial-gradient(900px 520px at 88% -8%, rgba(200,132,30,.06), transparent 60%),
+        radial-gradient(820px 540px at -6% 108%, rgba(68,84,255,.05), transparent 55%),
+        var(--bg);
+      background-attachment:fixed}
+
+    header{padding:var(--s4) var(--s6);border-bottom:1px solid var(--line);
+      display:flex;align-items:center;justify-content:space-between;gap:var(--s4);
+      background:rgba(251,248,242,.88);backdrop-filter:blur(8px);position:relative}
+    header::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;
+      background:linear-gradient(90deg,#FFEC30,#8090FF 55%,#4454FF);opacity:.85}
+    .brandwrap{display:flex;align-items:center;gap:var(--s3)}
+    .mark{width:var(--s6);height:var(--s6);border-radius:var(--radius-sm);flex:0 0 auto;
+      background:linear-gradient(150deg,#FFEC30 0%,#FFE54A 24%,#8090FF 68%,#4454FF 100%);
+      box-shadow:var(--shadow-md)}
+    header h1{font:var(--fw-semibold) var(--text-2xl)/var(--leading-tight) Fraunces,Georgia,serif;margin:0;
+      letter-spacing:-.01em;color:var(--ink)}
+    header h1 .srl{color:var(--gold);font-weight:var(--fw-semibold)}
+    header .sub{font:var(--fw-medium) var(--text-xs)/1 ui-monospace,monospace;letter-spacing:.2em;
+      text-transform:uppercase;color:var(--muted);margin-top:var(--s1)}
+    .hdr-right{display:flex;align-items:center;gap:var(--s3)}
+    .lang{display:inline-flex;background:var(--surface);border:1px solid var(--line2);
+      border-radius:var(--radius-sm);padding:2px;gap:2px}
+    .lang button{background:transparent;border:0;color:var(--muted2);cursor:pointer;
+      font:var(--fw-semibold) var(--text-xs)/1 Manrope,sans-serif;padding:var(--s2) var(--s3);
+      border-radius:6px;transition:color .15s,background .15s}
+    .lang button:hover{color:var(--ink)}
+    .lang button.on{background:var(--blue-bg);color:var(--blue-deep)}
+    .yt{font-size:var(--text-xs);color:var(--muted2);line-height:1;white-space:nowrap}
+    .yt .dot{display:inline-block;vertical-align:middle;width:6px;height:6px;margin-right:6px;border-radius:50%;
+      background:linear-gradient(135deg,#FFEC30,#4454FF)}
+    .yt a{color:var(--blue);font-weight:var(--fw-bold);text-decoration:none}
+    .yt a:hover{text-decoration:underline}
+    footer{border-top:1px solid var(--line);padding:var(--s3) var(--s6);
+      background:rgba(251,248,242,.88);backdrop-filter:blur(8px);
+      display:flex;align-items:center;justify-content:flex-end}
+
+    .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);gap:0;
+      height:calc(100vh - 108px)}
+    @media (max-width:920px){.wrap{grid-template-columns:1fr;height:auto}}
+    .col{padding:var(--s5) var(--s6);overflow:auto;min-height:0}
+    .col.left{border-right:1px solid var(--line);position:relative;isolation:isolate;
+      overflow-x:hidden;overflow-y:hidden;display:flex;flex-direction:column}
+    .col.left .answer{flex:1;min-height:0;overflow-y:auto}
+    .col.left::before{content:"";position:absolute;left:-32px;bottom:0;width:320px;height:280px;
+      transform:rotate(-12deg);pointer-events:none;z-index:-1;opacity:.07;
+      background:url("/static/assets/rigatone.png") center/contain no-repeat}
+
+    .ask{display:flex;gap:var(--s3)}
+    textarea{flex:1;background:var(--surface);color:var(--ink);
+      border:1px solid var(--line2);border-radius:var(--radius-md);padding:var(--s3) var(--s4);
+      font:inherit;line-height:var(--leading-normal);resize:vertical;min-height:56px;outline:none;
+      box-shadow:var(--shadow-sm);transition:border-color .15s,box-shadow .15s}
+    textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(68,84,255,.14)}
+    textarea::placeholder{color:var(--muted3);font-weight:var(--fw-normal)}
+    button.ask-btn{background:linear-gradient(135deg,#4454FF,#2C1AE2);color:#fff;border:0;
+      border-radius:var(--radius-md);padding:0 var(--s5);font:var(--fw-bold) var(--text-sm)/1 Manrope,sans-serif;
+      cursor:pointer;box-shadow:var(--shadow-md);transition:transform .1s,filter .15s}
+    button.ask-btn:hover{filter:brightness(1.06)}
+    button.ask-btn:active{transform:translateY(1px)}
+    button.ask-btn:disabled{opacity:.5;cursor:wait}
+
+    .chips{margin:var(--s4) 0 0;display:flex;flex-wrap:wrap;gap:var(--s2)}
+    .chip{font-size:var(--text-xs);font-weight:var(--fw-medium);color:var(--muted);
+      background:var(--surface);border:1px solid var(--line2);border-radius:999px;
+      padding:var(--s2) var(--s3);cursor:pointer;
+      transition:color .15s,border-color .15s,background .15s}
+    .chip:hover{color:var(--ink-secondary);border-color:var(--gold-soft);background:var(--gold-bg)}
+
+    .answer{margin-top:var(--s6);background:var(--surface);border:1px solid var(--line);
+      border-radius:var(--radius-lg);padding:var(--s5);min-height:96px;
+      white-space:pre-wrap;line-height:var(--leading-relaxed);font-size:var(--text-base);
+      color:var(--ink);box-shadow:var(--shadow-sm)}
+    .answer .spin{color:var(--muted);font-style:italic;font-size:var(--text-sm)}
+    .answer iframe{width:100%;height:440px;border:1px solid var(--line);background:#fff;border-radius:var(--radius-md)}
+
+    .meta{margin-top:var(--s4);display:flex;flex-wrap:wrap;gap:var(--s2);align-items:center}
+    .badge{font:var(--fw-medium) var(--text-xs)/1 ui-monospace,monospace;text-transform:uppercase;
+      letter-spacing:.08em;padding:var(--s2) var(--s3);border-radius:6px;
+      border:1px solid var(--line2);color:var(--muted);background:var(--surface2)}
+    .badge.v{color:#fff;font-weight:var(--fw-bold);border:0}
+    .src{background:var(--surface2);border:1px solid var(--line2);color:var(--muted);
+      font:var(--fw-normal) var(--text-xs)/1 ui-monospace,monospace;padding:var(--s2) var(--s3);border-radius:6px}
+    a.dl{color:#fff;background:linear-gradient(135deg,#C8841E,#A66A12);text-decoration:none;
+      font:var(--fw-bold) var(--text-sm) Manrope,sans-serif;padding:var(--s2) var(--s4);
+      border-radius:var(--radius-sm);box-shadow:var(--shadow-sm)}
+
+    .ghead{display:flex;align-items:center;justify-content:space-between;margin:0 0 var(--s4);gap:var(--s3)}
+    h2{font:var(--fw-semibold) var(--text-xs)/1 Manrope,sans-serif;text-transform:uppercase;
+      letter-spacing:.16em;color:var(--muted);margin:0}
+    .seg{display:inline-flex;background:var(--surface);border:1px solid var(--line2);
+      border-radius:var(--radius-md);padding:3px;gap:2px;box-shadow:var(--shadow-sm)}
+    .seg button{background:transparent;border:0;color:var(--muted);cursor:pointer;
+      font:var(--fw-semibold) var(--text-xs)/1 Manrope,sans-serif;padding:var(--s2) var(--s3);
+      border-radius:6px;transition:color .15s,background .15s,box-shadow .15s}
+    .seg button:hover{color:var(--ink-secondary)}
+    .seg button.on{background:linear-gradient(135deg,#4454FF,#2C1AE2);color:#fff;box-shadow:var(--shadow-sm)}
+
+    #graph{height:calc(100vh - 240px);min-height:440px;border:2px solid var(--line2);
+      border-radius:var(--radius-lg);background:var(--graph-bg);overflow:hidden;position:relative;
+      box-shadow:var(--shadow-lg)}
+    .legend{display:flex;gap:var(--s6);flex-wrap:wrap;margin-top:var(--s5);
+      font-size:var(--text-sm);font-weight:var(--fw-medium);color:var(--muted)}
+    .legend span{display:inline-flex;align-items:center;gap:var(--s2)}
+    .legend i{font-style:normal;font-size:var(--text-lg);opacity:.9}
+    .hint{position:absolute;left:var(--s4);bottom:var(--s3);font:var(--fw-normal) var(--text-xs)/1.4 ui-monospace,monospace;
+      color:#8E98C4;pointer-events:none;z-index:2;max-width:70%}
+    @media (prefers-reduced-motion:reduce){
+      button.ask-btn,.chip,.seg button,.lang button{transition:none}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brandwrap">
+      <div class="mark"></div>
+      <div>
+        <h1>Al Dente <span class="srl">S.r.l.</span></h1>
+        <div class="sub" data-i18n="subtitle">Company Brain</div>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <div class="lang" id="langSwitch">
+        <button type="button" class="lang-btn" data-lang="it">IT</button>
+        <button type="button" class="lang-btn" data-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-lang="es">ES</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <section class="col left">
+      <div class="ask">
+        <textarea id="q" data-i18n-placeholder="placeholder"></textarea>
+        <button id="send" class="ask-btn" data-i18n="ask">Ask</button>
+      </div>
+      <div class="chips" id="chips"></div>
+      <div class="answer" id="answer"><span class="spin" id="answerIdle" data-i18n="answersHere">Answers appear here.</span></div>
+      <div class="meta" id="meta"></div>
+    </section>
+
+    <section class="col right">
+      <div class="ghead">
+        <h2 data-i18n="knowledgeGraph">Knowledge graph</h2>
+        <div class="seg" id="seg">
+          <button data-mode="2d" data-i18n="mode2d">2D · standard</button>
+          <button data-mode="3d" class="on" data-i18n="mode3d">3D · dinamica</button>
+        </div>
+      </div>
+      <div id="graph"><div class="hint" id="hint"></div></div>
+      <div class="legend">
+        <span><i>🏬</i><span data-i18n="legendCustomer">customer</span></span>
+        <span><i>🍝</i><span data-i18n="legendProduct">product</span></span>
+        <span><i>🌾</i><span data-i18n="legendMaterial">raw material</span></span>
+        <span><i>🏭</i><span data-i18n="legendSupplier">supplier</span></span>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <div class="yt" data-i18n="attribution" data-i18n-html><span class="dot"></span><a href="https://yellowtech.it/" target="_blank" rel="noopener noreferrer">suggested by Yellow Tech</a></div>
+  </footer>
+
+  <script>
+    const I18N = {
+      it: {
+        pageTitle: 'Al Dente · Cervello aziendale',
+        subtitle: 'Cervello aziendale',
+        attribution: '<span class="dot"></span><a href="https://yellowtech.it/" target="_blank" rel="noopener noreferrer">suggerito da Yellow Tech</a>',
+        placeholder: 'Chiedi di clienti, ordini, lotti, fornitori, specifiche, chiamate...',
+        ask: 'Chiedi',
+        samples: [
+          'Quante opportunità aperte ha Primato Supermercati S.p.A. (CUST-0132) e qual è il valore totale?',
+          'Lo SKU PAS-PEN-500 è sotto la scorta minima? Indica la quantità a magazzino.',
+          "Nell'ultima chiamata con NordSpesa S.p.A. (CUST-0137), qual era il reclamo e quale lotto riguardava?",
+          'Qual è la shelf life e gli allergeni dichiarati per Spaghetti n.5 (PAS-SPA-500)?',
+          "Su TUTTE le chiamate registrate, quanti reclami qualità riguardano 'pasta spezzata'?",
+          "Qual è lo stato dell'ordine per Supermercati Bianchi?"
+        ],
+        answersHere: 'Le risposte compaiono qui.',
+        thinking: 'Sto pensando...',
+        requestFailed: 'Richiesta fallita: ',
+        downloadFile: 'Scarica file',
+        knowledgeGraph: 'Grafo della conoscenza',
+        mode2d: '2D · standard',
+        mode3d: '3D · dinamica',
+        legendCustomer: 'cliente',
+        legendProduct: 'prodotto',
+        legendMaterial: 'materia prima',
+        legendSupplier: 'fornitore',
+        hint3d: 'trascina per ruotare · scroll per zoom · clic su un nodo per focalizzare',
+        hint2d: 'trascina per spostare la vista · scroll per zoom',
+        graphUnavailable: 'Grafo non disponibile: '
+      },
+      en: {
+        pageTitle: 'Al Dente · Company Brain',
+        subtitle: 'Company Brain',
+        attribution: '<span class="dot"></span><a href="https://yellowtech.it/" target="_blank" rel="noopener noreferrer">suggested by Yellow Tech</a>',
+        placeholder: 'Ask about customers, orders, lots, suppliers, specs, calls...',
+        ask: 'Ask',
+        samples: [
+          'How many open opportunities does Primato Supermercati S.p.A. (CUST-0132) have, and what is their total value?',
+          'Is SKU PAS-PEN-500 below its minimum stock? Give the on-hand quantity.',
+          'In the last call with NordSpesa S.p.A. (CUST-0137), what was the complaint and which lot did it concern?',
+          'What is the shelf life and declared allergens for Spaghetti n.5 (PAS-SPA-500)?',
+          "Across ALL recorded calls, how many quality complaints concern 'broken pasta'?",
+          'What is the status of the order for Supermercati Bianchi?'
+        ],
+        answersHere: 'Answers appear here.',
+        thinking: 'Thinking...',
+        requestFailed: 'Request failed: ',
+        downloadFile: 'Download file',
+        knowledgeGraph: 'Knowledge graph',
+        mode2d: '2D · standard',
+        mode3d: '3D · dynamic',
+        legendCustomer: 'customer',
+        legendProduct: 'product',
+        legendMaterial: 'raw material',
+        legendSupplier: 'supplier',
+        hint3d: 'drag to rotate · scroll to zoom · click a node to focus',
+        hint2d: 'drag to pan · scroll to zoom',
+        graphUnavailable: 'Graph unavailable: '
+      },
+      es: {
+        pageTitle: 'Al Dente · Cerebro empresarial',
+        subtitle: 'Cerebro empresarial',
+        attribution: '<span class="dot"></span><a href="https://yellowtech.it/" target="_blank" rel="noopener noreferrer">sugerido por Yellow Tech</a>',
+        placeholder: 'Pregunta sobre clientes, pedidos, lotes, proveedores, especificaciones, llamadas...',
+        ask: 'Preguntar',
+        samples: [
+          '¿Cuántas oportunidades abiertas tiene Primato Supermercati S.p.A. (CUST-0132) y cuál es su valor total?',
+          '¿El SKU PAS-PEN-500 está por debajo del stock mínimo? Indica la cantidad disponible.',
+          'En la última llamada con NordSpesa S.p.A. (CUST-0137), ¿cuál fue la queja y qué lote concernía?',
+          '¿Cuál es la vida útil y los alérgenos declarados de Spaghetti n.5 (PAS-SPA-500)?',
+          "En TODAS las llamadas registradas, ¿cuántas quejas de calidad concernen 'pasta rota'?",
+          '¿Cuál es el estado del pedido de Supermercati Bianchi?'
+        ],
+        answersHere: 'Las respuestas aparecen aquí.',
+        thinking: 'Pensando...',
+        requestFailed: 'Solicitud fallida: ',
+        downloadFile: 'Descargar archivo',
+        knowledgeGraph: 'Grafo de conocimiento',
+        mode2d: '2D · estándar',
+        mode3d: '3D · dinámica',
+        legendCustomer: 'cliente',
+        legendProduct: 'producto',
+        legendMaterial: 'materia prima',
+        legendSupplier: 'proveedor',
+        hint3d: 'arrastra para rotar · scroll para zoom · clic en un nodo para enfocar',
+        hint2d: 'arrastra para mover la vista · scroll para zoom',
+        graphUnavailable: 'Grafo no disponible: '
+      }
+    };
+    let lang = localStorage.getItem('lang') || 'it';
+    if (!I18N[lang]) lang = 'it';
+
+    function t(key){ return I18N[lang][key]; }
+
+    function applyLang(){
+      document.documentElement.lang = lang;
+      document.title = t('pageTitle');
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const v = t(el.dataset.i18n);
+        if ('i18nHtml' in el.dataset) el.innerHTML = v;
+        else el.textContent = v;
+      });
+      const qEl = document.getElementById('q');
+      if (qEl) qEl.placeholder = t('placeholder');
+      document.querySelectorAll('.lang-btn').forEach(b =>
+        b.classList.toggle('on', b.dataset.lang === lang));
+      rebuildChips();
+      const hintEl = document.getElementById('hint');
+      if (hintEl && instance) hintEl.textContent = mode === '3d' ? t('hint3d') : t('hint2d');
+      const dl = meta.querySelector('a.dl');
+      if (dl) dl.textContent = t('downloadFile');
+    }
+
+    function setLang(next){
+      if (!I18N[next] || next === lang) return;
+      lang = next;
+      localStorage.setItem('lang', lang);
+      applyLang();
+    }
+
+    document.getElementById('langSwitch').addEventListener('click', e => {
+      const b = e.target.closest('.lang-btn');
+      if (b) setLang(b.dataset.lang);
+    });
+
+    const chipsEl = document.getElementById('chips');
+    function rebuildChips(){
+      chipsEl.innerHTML = '';
+      t('samples').forEach(s => {
+        const el = document.createElement('span');
+        el.className = 'chip';
+        el.textContent = s.length > 58 ? s.slice(0, 55) + '...' : s;
+        el.title = s;
+        el.onclick = () => { q.value = s; ask(); };
+        chipsEl.appendChild(el);
+      });
+    }
+
+    const q = document.getElementById('q');
+    const send = document.getElementById('send');
+    const answer = document.getElementById('answer');
+    const meta = document.getElementById('meta');
+    const vColors = {crm:'#4454FF', erp:'#C8841E', calls:'#0EA5C4', kb:'#2BA67D'};
+
+    function looksHtml(s){ return /<\/?(section|div|h[1-6]|table|ul|ol|article|html|body|style)/i.test(s); }
+    function stripBold(s){ return (s||'').replace(/\*\*(.*?)\*\*/g, '$1'); }
+
+    async function ask(){
+      const question = q.value.trim();
+      if(!question) return;
+      send.disabled = true; meta.innerHTML = '';
+      answer.innerHTML = '<span class="spin">' + t('thinking') + '</span>';
+      const t0 = performance.now();
+      try{
+        const r = await fetch('/ask', {method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({question})});
+        const d = await r.json();
+        const secs = ((performance.now()-t0)/1000).toFixed(1);
+        const clean = stripBold(d.answer || '(empty)');
+        if(looksHtml(clean)){
+          const f = document.createElement('iframe');
+          answer.innerHTML = ''; answer.appendChild(f); f.srcdoc = clean;
+        } else {
+          answer.textContent = clean;
+        }
+        const v = (d.verticale||'').toLowerCase();
+        meta.innerHTML = `<span class="badge v" style="background:${vColors[v]||'#888'}">${v||'?'}</span>`
+          + `<span class="badge">${secs}s</span>`
+          + (d.sources||[]).map(s => `<span class="src">${s}</span>`).join('');
+        if(d.artifact_url){
+          const a = document.createElement('a');
+          a.className='dl'; a.href=d.artifact_url; a.textContent=t('downloadFile'); a.target='_blank';
+          meta.appendChild(a);
+        }
+      }catch(e){ answer.textContent = t('requestFailed') + e; }
+      send.disabled = false;
+    }
+    send.onclick = ask;
+    q.addEventListener('keydown', e => { if(e.key==='Enter' && (e.metaKey||e.ctrlKey)) ask(); });
+
+    /* ---------- Knowledge graph (2D standard / 3D dinamica) ---------- */
+    const EMOJI = {customer:'🏬', product:'🍝', material:'🌾', supplier:'🏭'};
+    const COL   = {customer:'#6E8BFF', product:'#FFC23F', material:'#5FD0A0', supplier:'#22D3EE'};
+    const SIZE  = {customer:15, product:21, material:15, supplier:18};
+    const graphEl = document.getElementById('graph');
+    let GDATA = null, instance = null, mode = '3d';
+
+    async function loadData(){
+      if(GDATA) return GDATA;
+      const r = await fetch('/graph'); const g = await r.json();
+      GDATA = {
+        nodes: g.nodes,
+        links: (g.edges||[]).map(e => ({source:e.from, target:e.to, label:e.label}))
+      };
+      return GDATA;
+    }
+
+    const texCache = {};
+    function emojiTexture(group){
+      if(texCache[group]) return texCache[group];
+      const THREE = window.THREE;
+      const c = document.createElement('canvas'); c.width = c.height = 128;
+      const x = c.getContext('2d');
+      const glow = x.createRadialGradient(64,64,6,64,64,62);
+      glow.addColorStop(0, COL[group]+'cc'); glow.addColorStop(1, COL[group]+'00');
+      x.fillStyle = glow; x.beginPath(); x.arc(64,64,62,0,Math.PI*2); x.fill();
+      x.font = '90px "Segoe UI Emoji","Apple Color Emoji",serif';
+      x.textAlign = 'center'; x.textBaseline = 'middle';
+      x.fillText(EMOJI[group]||'•', 64, 72);
+      const t = new THREE.CanvasTexture(c); t.anisotropy = 4;
+      texCache[group] = t; return t;
+    }
+
+    function clearInstance(){
+      if(instance && instance.pauseAnimation){ try{ instance.pauseAnimation(); }catch(e){} }
+      instance = null;
+      graphEl.innerHTML = '<div class="hint" id="hint"></div>';
+    }
+
+    function freezeGraph(G){
+      G.graphData().nodes.forEach(n => {
+        if(n.x == null) return;
+        n.fx = n.x; n.fy = n.y;
+        if(n.z != null) n.fz = n.z;
+      });
+      if(G.pauseAnimation) G.pauseAnimation();
+    }
+
+    function render3D(data){
+      const THREE = window.THREE;
+      document.getElementById('hint').textContent = t('hint3d');
+      const G = new ForceGraph3D(graphEl)
+        .backgroundColor('#0b1020')
+        .graphData(data)
+        .warmupTicks(0)
+        .cooldownTicks(60)
+        .d3AlphaDecay(0.08)
+        .d3VelocityDecay(0.55)
+        .nodeThreeObject(n => {
+          const m = new THREE.SpriteMaterial({map: emojiTexture(n.group), transparent:true, depthWrite:false});
+          const s = new THREE.Sprite(m); const k = (SIZE[n.group]||11); s.scale.set(k,k,1); return s;
+        })
+        .nodeLabel(n => `<div style="background:#11182f;color:#eef2ff;border:1px solid #2a3458;border-radius:8px;padding:8px 11px;font:14px Figtree,sans-serif"><b>${EMOJI[n.group]||''} ${n.label}</b><br><span style="color:#9aa6d6;font-size:13px">${n.title||''}</span></div>`)
+        .linkColor(() => 'rgba(120,148,255,0.30)')
+        .linkWidth(1.2)
+        .linkLabel(l => l.label||'')
+        .linkDirectionalArrowLength(4).linkDirectionalArrowRelPos(1)
+        .linkDirectionalParticles(0)
+        .onEngineStop(() => freezeGraph(G))
+        .width(graphEl.clientWidth).height(graphEl.clientHeight);
+      G.cameraPosition({z: 330});
+      G.onNodeClick(node => {
+        const d = 90, h = Math.hypot(node.x||1, node.y||1, node.z||1) || 1, ratio = 1 + d/h;
+        G.cameraPosition({x:(node.x||0)*ratio, y:(node.y||0)*ratio, z:(node.z||0)*ratio}, node, 1100);
+      });
+      return G;
+    }
+
+    function render2D(data){
+      document.getElementById('hint').textContent = t('hint2d');
+      let hoverId = null;
+      const G = ForceGraph()(graphEl)
+        .backgroundColor('#0b1020')
+        .graphData(data)
+        .warmupTicks(0)
+        .cooldownTicks(60)
+        .d3AlphaDecay(0.08)
+        .d3VelocityDecay(0.55)
+        .enableNodeDrag(false)
+        .onNodeHover(n => { hoverId = n ? n.id : null; })
+        .onEngineStop(function(){
+          if(!G.__fitted){ G.__fitted = true; G.zoomToFit(400, 50); }
+          freezeGraph(G);
+        })
+        .nodeRelSize(8)
+        .nodeLabel(n => n.title ? `${n.label}\n${n.title}` : n.label)
+        .nodeCanvasObject((node, ctx, gscale) => {
+          if(node.x == null || node.y == null) return;
+          const r = (SIZE[node.group]||15) * 0.42;
+          const grd = ctx.createRadialGradient(node.x,node.y,1,node.x,node.y,r*1.7);
+          grd.addColorStop(0, COL[node.group]+'aa'); grd.addColorStop(1, COL[node.group]+'00');
+          ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(node.x,node.y,r*1.7,0,2*Math.PI); ctx.fill();
+          ctx.font = `${r*2.0}px "Segoe UI Emoji","Apple Color Emoji",serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(EMOJI[node.group]||'•', node.x, node.y);
+          if(hoverId === node.id){
+            const fs = Math.min(13, Math.max(10, 11 / gscale));
+            ctx.font = `600 ${fs}px Figtree, sans-serif`;
+            ctx.fillStyle = '#eef2ff';
+            ctx.textBaseline = 'top';
+            ctx.fillText(node.label, node.x, node.y + r*1.7 + 3);
+          }
+        })
+        .nodePointerAreaPaint((node, color, ctx) => {
+          ctx.fillStyle = color; ctx.beginPath();
+          ctx.arc(node.x, node.y, (SIZE[node.group]||15)*0.8, 0, 2*Math.PI); ctx.fill();
+        })
+        .linkColor(() => 'rgba(120,148,255,0.32)')
+        .linkWidth(1.2)
+        .linkDirectionalArrowLength(4).linkDirectionalArrowRelPos(1)
+        .linkDirectionalParticles(0)
+        .width(graphEl.clientWidth).height(graphEl.clientHeight);
+      return G;
+    }
+
+    async function draw(m){
+      mode = m;
+      document.querySelectorAll('#seg button').forEach(b =>
+        b.classList.toggle('on', b.dataset.mode === m));
+      let data;
+      try{ data = await loadData(); }
+      catch(e){ graphEl.innerHTML = '<div class="hint" id="hint">'+t('graphUnavailable')+e+'</div>'; return; }
+      if(m === '3d'){ await window.__threeReadyP; }
+      clearInstance();
+      const fresh = {nodes: data.nodes.map(n => ({...n})),
+                     links: data.links.map(l => ({source:l.source, target:l.target, label:l.label}))};
+      instance = (m === '3d') ? render3D(fresh) : render2D(fresh);
+    }
+
+    document.getElementById('seg').addEventListener('click', e => {
+      const b = e.target.closest('button'); if(b && b.dataset.mode !== mode) draw(b.dataset.mode);
+    });
+    window.addEventListener('resize', () => {
+      if(instance) instance.width(graphEl.clientWidth).height(graphEl.clientHeight);
+    });
+
+    applyLang();
+    draw('3d');
+  </script>
+</body>
+</html>
